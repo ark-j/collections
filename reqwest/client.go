@@ -34,16 +34,15 @@ func New(headers map[string]string, trace bool) *Reqwest {
 		getTracer(),
 		headers,
 		&sync.RWMutex{},
-	}).SetTransport(nil)
+	}).SetTransport(defaultTransport)
 }
 
-// SetTransport set the httptransport if povided transport is nil,
-// it will set default transport
+// SetTransport set the httptransport,
+// if povided transport is nil,
+// default transport will be used.
 func (r *Reqwest) SetTransport(t *http.Transport) *Reqwest {
 	if t != nil {
 		r.client.Transport = t
-	} else {
-		r.client.Transport = defaultTransport
 	}
 	return r
 }

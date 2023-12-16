@@ -1,0 +1,1 @@
+CGO_EANBLED=1 go test -race -run=. -benchtime -cpu -50s 

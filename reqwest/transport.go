@@ -10,8 +10,7 @@ import (
 )
 
 var defaultTransport = &http.Transport{
-	DialContext:    transportDailContext(),
-	DialTLSContext: transportDailContext(),
+	DialContext: transportDailContext(),
 	TLSClientConfig: &tls.Config{
 		InsecureSkipVerify: true,
 	},
@@ -40,7 +39,7 @@ func GetDefaultTransport() *http.Transport {
 // usable for field such as DialContext and DialTLSContext
 func transportDailContext() func(context.Context, string, string) (net.Conn, error) {
 	return (&net.Dialer{
-		Timeout:   10 * time.Second,
-		KeepAlive: 40 * time.Second,
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
 	}).DialContext
 }

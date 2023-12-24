@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+const (
+	mb                    = 1024 * 1024
+	maxIdleConnsPerHost   = 2
+	idleConnTimeout       = 2 * time.Minute
+	expectContinueTimeout = 1 * time.Second
+	tlsHandshakeTimeout   = 10 * time.Second
+	maxIdleConns          = 512
+)
+
 var defaultTransport = &http.Transport{
 	DialContext: transportDailContext(),
 	TLSClientConfig: &tls.Config{

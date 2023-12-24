@@ -2,6 +2,6 @@ package reqwest
 
 import "testing"
 
-func TestClient(t *testing.T) {
+func TestTransport(t *testing.T) {
 
 }

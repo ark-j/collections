@@ -1,4 +1,4 @@
-package tmap
+package smap
 
 import (
 	"sync"

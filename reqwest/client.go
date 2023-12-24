@@ -6,16 +6,6 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"sync"
-	"time"
-)
-
-const (
-	mb                    = 1024 * 1024
-	maxIdleConnsPerHost   = 2
-	idleConnTimeout       = 2 * time.Minute
-	expectContinueTimeout = 1 * time.Second
-	tlsHandshakeTimeout   = 10 * time.Second
-	maxIdleConns          = 512
 )
 
 // TODO: add default headers and option to add headers in request

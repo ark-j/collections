@@ -1,5 +1,5 @@
 // package tmap provide courrent safe generic map
-package tmap
+package smap
 
 import (
 	"maps"

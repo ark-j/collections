@@ -1,6 +1,8 @@
 package reqwest
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestClient(t *testing.T) {
 

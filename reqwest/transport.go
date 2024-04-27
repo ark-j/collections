@@ -39,7 +39,7 @@ func SetProxy(proxy func(r *http.Request) (*url.URL, error)) {
 	defaultTransport.Proxy = proxy
 }
 
-// GetDefaultTransport returns pointer to [net/http.Transport],
+// GetDefaultTransport returns Cloned pointer to [net/http.Transport],
 // which you can configure to your liking other than defaults.
 func GetDefaultTransport() *http.Transport {
 	return defaultTransport.Clone()

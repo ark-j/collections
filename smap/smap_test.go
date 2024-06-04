@@ -24,8 +24,8 @@ var data = []struct {
 	{"key12", "val12", "val12"},
 }
 
-// TestPut checks if concurrent put call to maps are safe or not
-func TestMapPut(t *testing.T) {
+// TestMap checks if concurrent put call to maps are safe or not
+func TestMap(t *testing.T) {
 	t.Run("concurrent-put", func(t *testing.T) {
 		var wg sync.WaitGroup
 		mm := New[string, string](len(data))
@@ -44,9 +44,7 @@ func TestMapPut(t *testing.T) {
 			}
 		}
 	})
-}
 
-func TestMapGet(t *testing.T) {
 	t.Run("concurrent-get", func(t *testing.T) {
 		mm := New[string, string](len(data))
 		for _, el := range data {
@@ -65,9 +63,7 @@ func TestMapGet(t *testing.T) {
 		}
 		wg.Wait()
 	})
-}
 
-func TestMapPutGet(t *testing.T) {
 	t.Run("concurrent-put-get", func(t *testing.T) {
 		mm := New[string, string](len(data))
 		var wg sync.WaitGroup

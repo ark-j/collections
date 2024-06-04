@@ -13,7 +13,7 @@ type Reqwest struct {
 	tracer *httptrace.ClientTrace // actual tracer implmentation
 }
 
-func New(headers map[string]string, trace bool) *Reqwest {
+func New(trace bool) *Reqwest {
 	return (&Reqwest{
 		client: &http.Client{},
 		trace:  trace,
@@ -24,7 +24,7 @@ func New(headers map[string]string, trace bool) *Reqwest {
 // SetTransport set the httptransport,
 // if povided transport is nil,
 // default transport will be used.
-func (r *Reqwest) SetTransport(t *http.Transport) *Reqwest {
+func (r *Reqwest) SetTransport(t http.RoundTripper) *Reqwest {
 	if t != nil {
 		r.client.Transport = t
 	}
@@ -57,37 +57,37 @@ func (r *Reqwest) SetTracer(tracer *httptrace.ClientTrace) *Reqwest {
 }
 
 // Get is http get method
-func (r *Reqwest) Get(ctx context.Context, uri string, headers map[string]string) (*http.Response, error) {
-	return r.request(ctx, http.MethodGet, uri, nil, headers)
+func (r *Reqwest) Get(ctx context.Context, uri string, headers, queries map[string]string) (*http.Response, error) {
+	return r.request(ctx, http.MethodGet, uri, nil, headers, queries)
 }
 
 // Head is http head method follows upto 10 redirect
-func (r *Reqwest) Head(ctx context.Context, uri string, headers map[string]string) (*http.Response, error) {
-	return r.request(ctx, http.MethodHead, uri, nil, headers)
+func (r *Reqwest) Head(ctx context.Context, uri string, headers, queries map[string]string) (*http.Response, error) {
+	return r.request(ctx, http.MethodHead, uri, nil, headers, queries)
 }
 
 // Post is http post method
-func (r *Reqwest) Post(ctx context.Context, uri string, body io.Reader, headers map[string]string) (*http.Response, error) {
-	return r.request(ctx, http.MethodPost, uri, body, headers)
+func (r *Reqwest) Post(ctx context.Context, uri string, body io.Reader, headers, queries map[string]string) (*http.Response, error) {
+	return r.request(ctx, http.MethodPost, uri, body, headers, queries)
 }
 
 // Put is http put method
-func (r *Reqwest) Put(ctx context.Context, uri string, body io.Reader, headers map[string]string) (*http.Response, error) {
-	return r.request(ctx, http.MethodPut, uri, body, headers)
+func (r *Reqwest) Put(ctx context.Context, uri string, body io.Reader, headers, queries map[string]string) (*http.Response, error) {
+	return r.request(ctx, http.MethodPut, uri, body, headers, queries)
 }
 
 // Patch is http patch method
-func (r *Reqwest) Patch(ctx context.Context, uri string, body io.Reader, headers map[string]string) (*http.Response, error) {
-	return r.request(ctx, http.MethodPatch, uri, body, headers)
+func (r *Reqwest) Patch(ctx context.Context, uri string, body io.Reader, headers, queries map[string]string) (*http.Response, error) {
+	return r.request(ctx, http.MethodPatch, uri, body, headers, queries)
 }
 
 // Delete is http delete method
-func (r *Reqwest) Delete(ctx context.Context, uri string, headers map[string]string) (*http.Response, error) {
-	return r.request(ctx, http.MethodDelete, uri, nil, headers)
+func (r *Reqwest) Delete(ctx context.Context, uri string, headers, queries map[string]string) (*http.Response, error) {
+	return r.request(ctx, http.MethodDelete, uri, nil, headers, queries)
 }
 
 // request is lowlevel function to perform request in Get, Put, Post, Head, Patch, Delete
-func (r *Reqwest) request(ctx context.Context, method, uri string, body io.Reader, headers map[string]string) (*http.Response, error) {
+func (r *Reqwest) request(ctx context.Context, method, uri string, body io.Reader, headers, queries map[string]string) (*http.Response, error) {
 	if r.trace {
 		ctx = httptrace.WithClientTrace(ctx, r.tracer)
 	}
@@ -99,6 +99,12 @@ func (r *Reqwest) request(ctx context.Context, method, uri string, body io.Reade
 	if len(headers) > 0 {
 		for k, v := range headers {
 			req.Header.Add(k, v)
+		}
+	}
+	if len(headers) > 0 {
+		q := req.URL.Query()
+		for k, v := range queries {
+			q.Set(k, v)
 		}
 	}
 	return r.client.Do(req)

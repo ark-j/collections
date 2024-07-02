@@ -11,37 +11,22 @@ import (
 	"testing"
 )
 
-// Custom Transport for roundTripper
-type RoundTripFunc func(req *http.Request) *http.Response
-
-func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req), nil
-}
-
-func TestClient(t *testing.T) {
-	t.Run("client-test", simpleClientTest)
-	t.Run("client-methods-test", testMethods)
-}
-
 type Payload struct {
 	Name string `json:"name"`
 	ID   int    `json:"id"`
 }
 
-// TODO: complete test
-func testMethods(t *testing.T) {
+func TestClient(t *testing.T) {
 	cases := []struct {
-		name   string
-		method string
-		want   any
-		exec   func(t *testing.T, want any)
+		name string
+		want any
+		exec func(t *testing.T, want any, uri string)
 	}{
 		{
-			name:   "test-http-get",
-			method: http.MethodGet,
-			want:   Payload{Name: "GET", ID: 1},
-			exec: func(t *testing.T, want any) {
-				res, err := New(false).Get(context.Background(), "/")
+			name: "test-http-get",
+			want: Payload{Name: "GET", ID: 1},
+			exec: func(t *testing.T, want any, uri string) {
+				res, err := New(false).Get(context.Background(), uri)
 				if noerr(t, err) {
 					return
 				}
@@ -55,14 +40,13 @@ func testMethods(t *testing.T) {
 			},
 		},
 		{
-			name:   "test-http-post",
-			method: http.MethodPost,
-			want:   Payload{Name: "POST", ID: 2},
-			exec: func(t *testing.T, want any) {
+			name: "test-http-post",
+			want: Payload{Name: "POST", ID: 2},
+			exec: func(t *testing.T, want any, uri string) {
 				var buf bytes.Buffer
 				// nolint
 				json.NewEncoder(&buf).Encode(want)
-				res, err := New(false).Post(context.Background(), "/", &buf)
+				res, err := New(false).Post(context.Background(), uri, &buf)
 				if noerr(t, err) {
 					return
 				}
@@ -76,15 +60,14 @@ func testMethods(t *testing.T) {
 			},
 		},
 		{
-			name:   "test-http-put",
-			method: http.MethodPut,
-			want:   http.StatusAccepted,
-			exec: func(t *testing.T, want any) {
+			name: "test-http-put",
+			want: http.StatusAccepted,
+			exec: func(t *testing.T, want any, uri string) {
 				var buf bytes.Buffer
 				body := Payload{Name: "PUT", ID: 3}
 				// nolint
 				json.NewEncoder(&buf).Encode(body)
-				res, err := New(false).Put(context.Background(), "/", &buf)
+				res, err := New(false).Put(context.Background(), uri, &buf)
 				if noerr(t, err) {
 					return
 				}
@@ -93,11 +76,10 @@ func testMethods(t *testing.T) {
 			},
 		},
 		{
-			name:   "test-http-delete",
-			method: http.MethodDelete,
-			want:   http.StatusNoContent,
-			exec: func(t *testing.T, want any) {
-				res, err := New(false).Delete(context.Background(), "/")
+			name: "test-http-delete",
+			want: http.StatusNoContent,
+			exec: func(t *testing.T, want any, uri string) {
+				res, err := New(false).Delete(context.Background(), uri)
 				if noerr(t, err) {
 					return
 				}
@@ -106,36 +88,32 @@ func testMethods(t *testing.T) {
 			},
 		},
 		{
-			name:   "test-http-head",
-			method: http.MethodHead,
-			want:   http.Header{"user_id": []string{"1111"}},
-			exec: func(t *testing.T, want any) {
-				res, err := New(false).Head(context.Background(), "/")
+			name: "test-http-head",
+			want: http.Header{"User_id": []string{"1111"}},
+			exec: func(t *testing.T, want any, uri string) {
+				res, err := New(false).Head(context.Background(), uri)
 				if noerr(t, err) {
 					return
 				}
 				defer res.Body.Close()
-
 				equals(t, want, res.Header)
 			},
 		},
 	}
 
-	server := httptest.NewServer(mockHttpHandler())
-	go server.Start()
-	defer server.Close()
+	ts := mockHTTPServer()
+	t.Cleanup(ts.Close)
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.exec(t, tt.want)
+			tt.exec(t, tt.want, ts.URL)
 		})
 	}
 }
 
-// mockhttpHandler for testing http client
-func mockHttpHandler() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+// mockHTTPServer for testing http client
+func mockHTTPServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.Method {
 		case http.MethodGet:
@@ -164,14 +142,25 @@ func mockHttpHandler() http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 		case http.MethodOptions:
 		case http.MethodHead:
-			w.Header().Add("user_id", "1111")
+			w.Header().Set("user_id", "1111")
 		}
-	})
-	return mux
+	}))
+}
+
+// Custom Transport for roundTripper
+type RoundTripFunc func(req *http.Request) *http.Response
+
+func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req), nil
+}
+
+// new test client
+func NewTestClient(fn RoundTripFunc) *Reqwest {
+	return New(false).SetTransport(RoundTripFunc(fn))
 }
 
 // simple client test
-func simpleClientTest(t *testing.T) {
+func TestSimpleClient(t *testing.T) {
 	c := NewTestClient(func(req *http.Request) *http.Response {
 		equals(t, req.URL.String(), "https://example.com")
 		return &http.Response{
@@ -192,17 +181,11 @@ func simpleClientTest(t *testing.T) {
 	equals(t, b, []byte("OK"))
 }
 
-// new test client
-func NewTestClient(fn RoundTripFunc) *Reqwest {
-	return New(false).SetTransport(RoundTripFunc(fn))
-}
-
 // helper for equality
 func equals(t testing.TB, got, want any) {
 	t.Helper()
-	if !reflect.DeepEqual(got, want) {
+	if !reflect.DeepEqual(want, got) {
 		t.Errorf("wanted %v got %v", want, got)
-		t.Fail()
 	}
 }
 
@@ -212,5 +195,5 @@ func noerr(t testing.TB, err error) bool {
 	if err != nil {
 		t.Errorf("required no err but got err:%v", err)
 	}
-	return err == nil
+	return err != nil
 }

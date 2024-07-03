@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -160,9 +161,10 @@ func NewTestClient(fn RoundTripFunc) *Reqwest {
 }
 
 // simple client test
-func TestSimpleClient(t *testing.T) {
+func TestClientQuery(t *testing.T) {
+	want := url.Values{"user": []string{"1111"}}
 	c := NewTestClient(func(req *http.Request) *http.Response {
-		equals(t, req.URL.String(), "https://example.com")
+		equals(t, req.URL.Query(), want)
 		return &http.Response{
 			StatusCode: 200,
 			Body:       io.NopCloser(bytes.NewBufferString("OK")),
@@ -170,9 +172,8 @@ func TestSimpleClient(t *testing.T) {
 		}
 	})
 
-	res, err := c.Get(context.Background(), "https://example.com")
-	if err != nil {
-		t.Errorf("err while getting response: %v", err)
+	res, err := c.Get(context.Background(), "https://example.com", WithQuries(map[string]string{"user": "1111"}))
+	if noerr(t, err) {
 		return
 	}
 	defer res.Body.Close()
@@ -182,11 +183,13 @@ func TestSimpleClient(t *testing.T) {
 }
 
 // helper for equality
-func equals(t testing.TB, got, want any) {
+func equals(t testing.TB, got, want any) bool {
 	t.Helper()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("wanted %v got %v", want, got)
+		return false
 	}
+	return true
 }
 
 // helper utility for noerr
@@ -194,6 +197,7 @@ func noerr(t testing.TB, err error) bool {
 	t.Helper()
 	if err != nil {
 		t.Errorf("required no err but got err:%v", err)
+		return false
 	}
-	return err != nil
+	return true
 }

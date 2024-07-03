@@ -158,6 +158,8 @@ func (r *Reqwest) request(
 		for k, v := range ho.queries {
 			q.Set(k, v)
 		}
+		req.URL.RawQuery = q.Encode()
 	}
+
 	return r.client.Do(req)
 }

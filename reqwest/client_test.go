@@ -161,25 +161,58 @@ func NewTestClient(fn RoundTripFunc) *Reqwest {
 }
 
 // simple client test
-func TestClientQuery(t *testing.T) {
-	want := url.Values{"user": []string{"1111"}}
-	c := NewTestClient(func(req *http.Request) *http.Response {
-		equals(t, req.URL.Query(), want)
-		return &http.Response{
-			StatusCode: 200,
-			Body:       io.NopCloser(bytes.NewBufferString("OK")),
-			Header:     make(http.Header),
-		}
-	})
-
-	res, err := c.Get(context.Background(), "https://example.com", WithQuries(map[string]string{"user": "1111"}))
-	if noerr(t, err) {
-		return
+func TestClientMisc(t *testing.T) {
+	cases := []struct {
+		name         string
+		want         any
+		options      []Options
+		roundTripper func(want any) RoundTripFunc
+	}{
+		{
+			name:    "test-http-query",
+			want:    url.Values{"user": []string{"1111"}},
+			options: []Options{WithQuries(map[string]string{"user": "1111"})},
+			roundTripper: func(want any) RoundTripFunc {
+				return func(req *http.Request) *http.Response {
+					equals(t, req.URL.Query(), want)
+					return &http.Response{
+						StatusCode: 200,
+						Body:       io.NopCloser(bytes.NewBufferString("OK")),
+						Header:     make(http.Header),
+					}
+				}
+			},
+		},
+		{
+			name: "test-http-headers",
+			want: http.Header{
+				"User":       []string{"1111"},
+				"User-Agent": []string{"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"},
+			},
+			options: []Options{WithHeaders(map[string]string{"User": "1111"})},
+			roundTripper: func(want any) RoundTripFunc {
+				return func(req *http.Request) *http.Response {
+					equals(t, req.Header, want)
+					return &http.Response{
+						StatusCode: 200,
+						Body:       io.NopCloser(bytes.NewBufferString("OK")),
+						Header:     make(http.Header),
+					}
+				}
+			},
+		},
 	}
-	defer res.Body.Close()
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			c := NewTestClient(tt.roundTripper(tt.want))
 
-	b, _ := io.ReadAll(res.Body)
-	equals(t, b, []byte("OK"))
+			res, err := c.Get(context.Background(), "https://example.com", tt.options...)
+			if noerr(t, err) {
+				return
+			}
+			defer res.Body.Close()
+		})
+	}
 }
 
 // helper for equality

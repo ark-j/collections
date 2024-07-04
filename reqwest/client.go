@@ -7,34 +7,9 @@ import (
 	"net/http/httptrace"
 )
 
-type HttpOptions struct {
-	headers map[string]string
-	queries map[string]string
-	body    io.Reader
-}
-
-type Options func(ho *HttpOptions)
-
-func WithQuries(q map[string]string) Options {
-	return func(ho *HttpOptions) {
-		ho.queries = q
-	}
-}
-
-func WithHeaders(h map[string]string) Options {
-	return func(ho *HttpOptions) {
-		ho.headers = h
-	}
-}
-
-// WithBody function is optional body param,
-// If you want to provide it in GET, DELETE, Etc.
-// If function requires mandatory body then it will take precedence.
-func WithBody(b io.Reader) Options {
-	return func(ho *HttpOptions) {
-		ho.body = b
-	}
-}
+// Change this to desired user agent header
+// or you can always overwirte using Header Options
+const HeaderUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 type Reqwest struct {
 	client *http.Client           // http client
@@ -87,37 +62,38 @@ func (r *Reqwest) SetTracer(tracer *httptrace.ClientTrace) *Reqwest {
 
 // Get is http get method
 func (r *Reqwest) Get(ctx context.Context, uri string, opts ...Options) (*http.Response, error) {
-	return r.request(ctx, http.MethodGet, uri, nil, opts...)
+	return request(ctx, r, http.MethodGet, uri, nil, opts...)
 }
 
 // Head is http head method follows upto 10 redirect
 func (r *Reqwest) Head(ctx context.Context, uri string, opts ...Options) (*http.Response, error) {
-	return r.request(ctx, http.MethodHead, uri, nil, opts...)
+	return request(ctx, r, http.MethodHead, uri, nil, opts...)
 }
 
 // Post is http post method
 func (r *Reqwest) Post(ctx context.Context, uri string, body io.Reader, opts ...Options) (*http.Response, error) {
-	return r.request(ctx, http.MethodPost, uri, body, opts...)
+	return request(ctx, r, http.MethodPost, uri, body, opts...)
 }
 
 // Put is http put method
 func (r *Reqwest) Put(ctx context.Context, uri string, body io.Reader, opts ...Options) (*http.Response, error) {
-	return r.request(ctx, http.MethodPut, uri, body, opts...)
+	return request(ctx, r, http.MethodPut, uri, body, opts...)
 }
 
 // Patch is http patch method
 func (r *Reqwest) Patch(ctx context.Context, uri string, body io.Reader, opts ...Options) (*http.Response, error) {
-	return r.request(ctx, http.MethodPatch, uri, body, opts...)
+	return request(ctx, r, http.MethodPatch, uri, body, opts...)
 }
 
 // Delete is http delete method
 func (r *Reqwest) Delete(ctx context.Context, uri string, opts ...Options) (*http.Response, error) {
-	return r.request(ctx, http.MethodDelete, uri, nil, opts...)
+	return request(ctx, r, http.MethodDelete, uri, nil, opts...)
 }
 
 // request is lowlevel function to perform request in Get, Put, Post, Head, Patch, Delete
-func (r *Reqwest) request(
+func request(
 	ctx context.Context,
+	r *Reqwest,
 	method,
 	uri string,
 	body io.Reader,
@@ -129,13 +105,9 @@ func (r *Reqwest) request(
 	}
 
 	// initiate options for headers and queries
-	ho := &HttpOptions{}
+	ho := &HTTPOptions{}
 	for _, o := range opts {
 		o(ho)
-	}
-
-	if body == nil {
-		body = ho.body
 	}
 
 	// initiate request with context
@@ -144,7 +116,7 @@ func (r *Reqwest) request(
 		return nil, err
 	}
 	// initiate request header for general uses
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("User-Agent", HeaderUserAgent)
 
 	// set all optional headers
 	if len(ho.headers) > 0 {

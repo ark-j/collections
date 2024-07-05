@@ -20,7 +20,6 @@ func New[K comparable, V any](cap int) *Map[K, V] {
 
 // Put adds key-val entry to map
 func (m *Map[K, V]) Put(key K, val V) {
-	m.mu.RLocker()
 	m.mu.Lock()
 	m.m[key] = val
 	m.mu.Unlock()

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,6 +18,7 @@ type Payload struct {
 	ID   int    `json:"id"`
 }
 
+// Test client methods such as http GET, PUT, POST, HEAD, DELETE
 func TestClient(t *testing.T) {
 	cases := []struct {
 		name string
@@ -45,8 +47,9 @@ func TestClient(t *testing.T) {
 			want: Payload{Name: "POST", ID: 2},
 			exec: func(t *testing.T, want any, uri string) {
 				var buf bytes.Buffer
-				// nolint
-				json.NewEncoder(&buf).Encode(want)
+				if noerr(t, json.NewEncoder(&buf).Encode(want)) {
+					return
+				}
 				res, err := New(false).Post(context.Background(), uri, &buf)
 				if noerr(t, err) {
 					return
@@ -55,8 +58,9 @@ func TestClient(t *testing.T) {
 				defer res.Body.Close()
 
 				var got Payload
-				// nolint
-				json.NewDecoder(res.Body).Decode(&got)
+				if noerr(t, json.NewDecoder(res.Body).Decode(&got)) {
+					return
+				}
 				equals(t, want, got)
 			},
 		},
@@ -66,8 +70,9 @@ func TestClient(t *testing.T) {
 			exec: func(t *testing.T, want any, uri string) {
 				var buf bytes.Buffer
 				body := Payload{Name: "PUT", ID: 3}
-				// nolint
-				json.NewEncoder(&buf).Encode(body)
+				if noerr(t, json.NewEncoder(&buf).Encode(body)) {
+					return
+				}
 				res, err := New(false).Put(context.Background(), uri, &buf)
 				if noerr(t, err) {
 					return
@@ -119,26 +124,33 @@ func mockHTTPServer() *httptest.Server {
 		switch r.Method {
 		case http.MethodGet:
 			body := &Payload{Name: "GET", ID: 1}
-			// nolint
-			json.NewEncoder(w).Encode(body)
+			if err := json.NewEncoder(w).Encode(body); err != nil {
+				log.Println(err)
+			}
 		case http.MethodPut:
 			var body Payload
-			// nolint
-			json.NewDecoder(r.Body).Decode(&body)
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				log.Println(err)
+				return
+			}
 			if body.ID != 3 {
 				w.WriteHeader(http.StatusBadGateway)
 				return
 			}
 			w.WriteHeader(http.StatusAccepted)
-			// nolint
-			json.NewEncoder(w).Encode(&body)
+			if err := json.NewEncoder(w).Encode(&body); err != nil {
+				log.Println(err)
+			}
 		case http.MethodPost:
 			var body Payload
-			// nolint
-			json.NewDecoder(r.Body).Decode(&body)
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				log.Println(err)
+				return
+			}
 			w.WriteHeader(http.StatusCreated)
-			// nolint
-			json.NewEncoder(w).Encode(&body)
+			if err := json.NewEncoder(w).Encode(&body); err != nil {
+				log.Println(err)
+			}
 		case http.MethodDelete:
 			w.WriteHeader(http.StatusNoContent)
 		case http.MethodOptions:
@@ -160,7 +172,7 @@ func NewTestClient(fn RoundTripFunc) *Reqwest {
 	return New(false).SetTransport(RoundTripFunc(fn))
 }
 
-// simple client test
+// Test Options of the http client
 func TestClientMisc(t *testing.T) {
 	cases := []struct {
 		name         string

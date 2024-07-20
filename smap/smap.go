@@ -1,4 +1,4 @@
-// package tmap provide courrent safe generic map
+// package smap provide courrent safe generic map
 package smap
 
 import (
@@ -54,7 +54,7 @@ func (m *Map[K, V]) Vals() []V {
 	return vals
 }
 
-// elements in map
+// Len return length of map
 func (m *Map[K, V]) Len() int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -87,11 +87,11 @@ func (m *Map[K, V]) Clear() {
 // beware for passing pointers as values
 // because they can still modify original map
 func (m *Map[K, V]) Clone() map[K]V {
-	mm := make(map[K]V, m.Len())
+	cm := make(map[K]V, m.Len())
 	m.mu.RLock()
 	for k, v := range m.m {
-		mm[k] = v
+		cm[k] = v
 	}
 	m.mu.RUnlock()
-	return mm
+	return cm
 }

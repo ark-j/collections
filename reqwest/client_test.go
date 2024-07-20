@@ -105,6 +105,18 @@ func TestClient(t *testing.T) {
 				equals(t, want, res.Header)
 			},
 		},
+		{
+			name: "test-http-options",
+			want: http.Header{"Allow": []string{"GET, PUT, POST, DELETE, HEAD"}},
+			exec: func(t *testing.T, want any, uri string) {
+				res, err := New(false).Head(context.Background(), uri)
+				if noerr(t, err) {
+					return
+				}
+				defer res.Body.Close()
+				equals(t, want, res.Header)
+			},
+		},
 	}
 
 	ts := mockHTTPServer()
@@ -154,6 +166,7 @@ func mockHTTPServer() *httptest.Server {
 		case http.MethodDelete:
 			w.WriteHeader(http.StatusNoContent)
 		case http.MethodOptions:
+			w.Header().Set("Allow", "GET, PUT, POST, DELETE, HEAD")
 		case http.MethodHead:
 			w.Header().Set("user_id", "1111")
 		}

@@ -5,27 +5,27 @@ import (
 	"testing"
 )
 
-var data = []struct {
-	key  string
-	val  string
-	want string
-}{
-	{"key1", "val1", "val1"},
-	{"key2", "val2", "val2"},
-	{"key3", "val3", "val3"},
-	{"key4", "val4", "val4"},
-	{"key5", "val5", "val5"},
-	{"key6", "val6", "val6"},
-	{"key7", "val7", "val7"},
-	{"key8", "val8", "val8"},
-	{"key9", "val9", "val9"},
-	{"key10", "val10", "val10"},
-	{"key11", "val11", "val11"},
-	{"key12", "val12", "val12"},
-}
-
 // TestMap checks if concurrent put call to maps are safe or not
 func TestMap(t *testing.T) {
+	data := []struct {
+		key  string
+		val  string
+		want string
+	}{
+		{"key1", "val1", "val1"},
+		{"key2", "val2", "val2"},
+		{"key3", "val3", "val3"},
+		{"key4", "val4", "val4"},
+		{"key5", "val5", "val5"},
+		{"key6", "val6", "val6"},
+		{"key7", "val7", "val7"},
+		{"key8", "val8", "val8"},
+		{"key9", "val9", "val9"},
+		{"key10", "val10", "val10"},
+		{"key11", "val11", "val11"},
+		{"key12", "val12", "val12"},
+	}
+
 	t.Run("concurrent-put", func(t *testing.T) {
 		var wg sync.WaitGroup
 		mm := New[string, string](len(data))

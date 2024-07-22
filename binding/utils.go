@@ -5,6 +5,8 @@ import (
 	"mime/multipart"
 	"reflect"
 	"strconv"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func ensurePointer(obj any) error {
@@ -30,7 +32,7 @@ func mapForm(formStruct reflect.Value, form map[string][]string, formfile map[st
 			if err := mapForm(structField.Elem(), form, formfile); err != nil {
 				return err
 			}
-			if reflect.DeepEqual(structField.Elem().Interface(), reflect.Zero(structField.Elem().Type()).Interface()) {
+			if cmp.Diff(structField.Elem().Interface(), reflect.Zero(structField.Elem().Type()).Interface()) == "" {
 				structField.Set(reflect.Zero(structField.Type()))
 			}
 		} else if typeField.Type.Kind() == reflect.Struct {

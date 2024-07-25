@@ -121,7 +121,7 @@ func request(
 	// set all optional headers
 	if len(ho.headers) > 0 {
 		for k, v := range ho.headers {
-			req.Header.Add(k, v)
+			req.Header.Set(k, v)
 		}
 	}
 	// set all optional queries

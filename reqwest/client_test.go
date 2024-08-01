@@ -21,9 +21,9 @@ type Payload struct {
 // Test client methods such as http GET, PUT, POST, HEAD, DELETE
 func TestClient(t *testing.T) {
 	cases := []struct {
-		name string
 		want any
 		exec func(t *testing.T, want any, uri string)
+		name string
 	}{
 		{
 			name: "test-http-get",

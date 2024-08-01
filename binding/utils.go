@@ -158,26 +158,11 @@ func setWithProperType(valueKind reflect.Kind, val string, structField reflect.V
 	return nil
 }
 
+// Checks if actual ie tag is not zero if so returns it
+// If tag is not present it directly return Fieldname
 func parseFormName(raw, actual string) string {
 	if len(actual) > 0 {
 		return actual
 	}
-	return nameMapper(raw)
-}
-
-// NameMapper represents a form tag name mapper.
-type NameMapper func(string) string
-
-var nameMapper = func(field string) string {
-	newstr := make([]rune, 0, len(field))
-	for i, chr := range field {
-		if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
-			if i > 0 {
-				newstr = append(newstr, '_')
-			}
-			chr -= ('A' - 'a')
-		}
-		newstr = append(newstr, chr)
-	}
-	return string(newstr)
+	return raw
 }

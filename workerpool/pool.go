@@ -15,12 +15,12 @@ type Response[T any] struct {
 type WorkFunc[T any] func() (T, error)
 
 type WorkerPool[T any] struct {
-	count int               // number of workers to launch
-	ch    chan WorkFunc[T]  // Input channel for WorkFunc
-	ResCh chan *Response[T] // response channel for WorkFunc responses
-	wg    sync.WaitGroup
-	mu    sync.Mutex
+	ch    chan WorkFunc[T]
+	ResCh chan *Response[T]
 	stats map[int]*Stats
+	wg    sync.WaitGroup
+	count int
+	mu    sync.Mutex
 }
 
 type Stats struct {

@@ -52,8 +52,8 @@ func mapForm(formStruct reflect.Value, form map[string][]string, formfile map[st
 			if structField.Kind() == reflect.Slice && numElems > 0 {
 				sliceOf := structField.Type().Elem().Kind()
 				slice := reflect.MakeSlice(structField.Type(), numElems, numElems)
-				for i := 0; i < numElems; i++ {
-					if err := setWithProperType(sliceOf, inputValue[i], slice.Index(i), inputFieldName); err != nil {
+				for j := 0; j < numElems; j++ {
+					if err := setWithProperType(sliceOf, inputValue[j], slice.Index(j), inputFieldName); err != nil {
 						return err
 					}
 				}

@@ -94,8 +94,7 @@ func (r *Reqwest) Delete(ctx context.Context, uri string, opts ...Options) (*htt
 func request(
 	ctx context.Context,
 	r *Reqwest,
-	method,
-	uri string,
+	method, uri string,
 	body io.Reader,
 	opts ...Options,
 ) (*http.Response, error) {

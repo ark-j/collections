@@ -211,8 +211,10 @@ func TestClientMisc(t *testing.T) {
 		{
 			name: "test-http-headers",
 			want: http.Header{
-				"User":       []string{"1111"},
-				"User-Agent": []string{"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"},
+				"User": []string{"1111"},
+				"User-Agent": []string{
+					"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+				},
 			},
 			options: []Options{WithHeaders(map[string]string{"User": "1111"})},
 			roundTripper: func(want any) RoundTripFunc {

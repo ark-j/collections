@@ -66,7 +66,7 @@ func (wp *WorkerPool[T]) addStat(id int, uptime time.Duration) {
 	wp.mu.Lock()
 	if s, ok := wp.stats[id]; ok {
 		s.UpTime = uptime
-		s.TaskCount += 1
+		s.TaskCount++
 	} else {
 		wp.stats[id] = &Stats{TaskCount: 1, UpTime: uptime}
 	}

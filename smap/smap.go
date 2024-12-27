@@ -8,13 +8,12 @@ import (
 
 type Map[K comparable, V any] struct {
 	m  map[K]V
-	mu *sync.RWMutex
+	mu sync.RWMutex
 }
 
-func New[K comparable, V any](cap int) *Map[K, V] {
+func New[K comparable, V any](capacity int) *Map[K, V] {
 	return &Map[K, V]{
-		mu: &sync.RWMutex{},
-		m:  make(map[K]V, cap),
+		m: make(map[K]V, capacity),
 	}
 }
 
@@ -26,7 +25,7 @@ func (m *Map[K, V]) Put(key K, val V) {
 }
 
 // Get get value provided key
-func (m *Map[K, V]) Get(key K) V {
+func (m *Map[K, V]) Get(key K) V { //nolint
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.m[key]

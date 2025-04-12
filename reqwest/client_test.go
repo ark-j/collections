@@ -168,7 +168,7 @@ func mockHTTPServer() *httptest.Server {
 		case http.MethodOptions:
 			w.Header().Set("Allow", "GET, PUT, POST, DELETE, HEAD")
 		case http.MethodHead:
-			w.Header().Set("user_id", "1111")
+			w.Header().Set("User_id", "1111")
 		}
 	}))
 }
@@ -182,7 +182,7 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 
 // new test client
 func NewTestClient(fn RoundTripFunc) *Reqwest {
-	return New(false).SetTransport(RoundTripFunc(fn))
+	return New(false).SetTransport(fn)
 }
 
 // Test Options of the http client

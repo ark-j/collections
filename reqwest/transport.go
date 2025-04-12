@@ -39,7 +39,8 @@ func SetProxy(proxy func(r *http.Request) (*url.URL, error)) {
 	defaultTransport.Proxy = proxy
 }
 
-// SetSocket function used for connecting to various different socket such as unix, ip. tcp, ipv4, ipv6
+// SetSocket function used for connecting to various different socket such as unix, ip. tcp, ipv4,
+// ipv6
 func SetSocket(f func(ctx context.Context, network, addr string) (net.Conn, error)) {
 	defaultTransport.DialContext = f
 }

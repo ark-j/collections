@@ -17,7 +17,11 @@ func ensurePointer(obj any) error {
 }
 
 // Takes values from the form data and puts them into a struct
-func mapForm(formStruct reflect.Value, form map[string][]string, formfile map[string][]*multipart.FileHeader) error {
+func mapForm(
+	formStruct reflect.Value,
+	form map[string][]string,
+	formfile map[string][]*multipart.FileHeader,
+) error {
 	if formStruct.Kind() == reflect.Ptr {
 		formStruct = formStruct.Elem()
 	}
@@ -32,7 +36,10 @@ func mapForm(formStruct reflect.Value, form map[string][]string, formfile map[st
 			if err := mapForm(structField.Elem(), form, formfile); err != nil {
 				return err
 			}
-			if cmp.Diff(structField.Elem().Interface(), reflect.Zero(structField.Elem().Type()).Interface()) == "" {
+			if cmp.Diff(
+				structField.Elem().Interface(),
+				reflect.Zero(structField.Elem().Type()).Interface(),
+			) == "" {
 				structField.Set(reflect.Zero(structField.Type()))
 			}
 		} else if typeField.Type.Kind() == reflect.Struct {
@@ -72,7 +79,8 @@ func mapForm(formStruct reflect.Value, form map[string][]string, formfile map[st
 		}
 		fhType := reflect.TypeOf((*multipart.FileHeader)(nil))
 		numElems := len(inputFile)
-		if structField.Kind() == reflect.Slice && numElems > 0 && structField.Type().Elem() == fhType {
+		if structField.Kind() == reflect.Slice && numElems > 0 &&
+			structField.Type().Elem() == fhType {
 			slice := reflect.MakeSlice(structField.Type(), numElems, numElems)
 			for i := 0; i < numElems; i++ {
 				slice.Index(i).Set(reflect.ValueOf(inputFile[i]))
@@ -89,7 +97,12 @@ func mapForm(formStruct reflect.Value, form map[string][]string, formfile map[st
 // matching value from the request (via Form middleware) in the
 // same type, so that not all deserialized values have to be strings.
 // Supported types are string, int, float, bool, and ptr of these types.
-func setWithProperType(valueKind reflect.Kind, val string, structField reflect.Value, nameInTag string) error {
+func setWithProperType(
+	valueKind reflect.Kind,
+	val string,
+	structField reflect.Value,
+	nameInTag string,
+) error {
 	switch valueKind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if val == "" {

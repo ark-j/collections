@@ -40,7 +40,12 @@ func TestMap(t *testing.T) {
 		wg.Wait()
 		for _, d := range data {
 			if mm.Get(d.key) != d.want {
-				t.Errorf("must be concurrency issue we wanted %s but got %s for %s key", d.want, mm.Get(d.key), d.key)
+				t.Errorf(
+					"must be concurrency issue we wanted %s but got %s for %s key",
+					d.want,
+					mm.Get(d.key),
+					d.key,
+				)
 			}
 		}
 	})

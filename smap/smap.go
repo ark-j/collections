@@ -1,4 +1,4 @@
-// package smap provide courrent safe generic map
+// Package smap provide courrent safe generic map
 package smap
 
 import (

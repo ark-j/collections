@@ -12,7 +12,7 @@ func getTracer() *httptrace.ClientTrace {
 			log.Printf("connection to host and port = %s\n", addr)
 		},
 		GotConn: func(info httptrace.GotConnInfo) {
-			log.Printf("connection aquired: %+v\n", info)
+			log.Printf("connection acquired: %+v\n", info)
 		},
 		PutIdleConn: func(err error) {
 			if err != nil {

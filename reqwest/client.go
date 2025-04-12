@@ -8,7 +8,7 @@ import (
 )
 
 // Change this to desired user agent header
-// or you can always overwirte using Header Options
+// or you can always overwrite using Header Options
 const HeaderUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 type Reqwest struct {
@@ -71,17 +71,32 @@ func (r *Reqwest) Head(ctx context.Context, uri string, opts ...Options) (*http.
 }
 
 // Post is http post method
-func (r *Reqwest) Post(ctx context.Context, uri string, body io.Reader, opts ...Options) (*http.Response, error) {
+func (r *Reqwest) Post(
+	ctx context.Context,
+	uri string,
+	body io.Reader,
+	opts ...Options,
+) (*http.Response, error) {
 	return request(ctx, r, http.MethodPost, uri, body, opts...)
 }
 
 // Put is http put method
-func (r *Reqwest) Put(ctx context.Context, uri string, body io.Reader, opts ...Options) (*http.Response, error) {
+func (r *Reqwest) Put(
+	ctx context.Context,
+	uri string,
+	body io.Reader,
+	opts ...Options,
+) (*http.Response, error) {
 	return request(ctx, r, http.MethodPut, uri, body, opts...)
 }
 
 // Patch is http patch method
-func (r *Reqwest) Patch(ctx context.Context, uri string, body io.Reader, opts ...Options) (*http.Response, error) {
+func (r *Reqwest) Patch(
+	ctx context.Context,
+	uri string,
+	body io.Reader,
+	opts ...Options,
+) (*http.Response, error) {
 	return request(ctx, r, http.MethodPatch, uri, body, opts...)
 }
 

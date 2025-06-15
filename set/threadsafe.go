@@ -55,30 +55,40 @@ func (s *Set[T]) Clone() *Set[T] {
 	return &Set[T]{us: us}
 }
 
-func (s *Set[T]) Equal(other *Set[T]) bool {
+func (s *Set[T]) Equal(o *Set[T]) bool {
 	s.mu.RLock()
-	defer s.mu.Unlock()
-	return s.us.Equal(other.us)
+	o.mu.RLock()
+	defer func() {
+		s.mu.RUnlock()
+		o.mu.RUnlock()
+	}()
+	return s.us.Equal(o.us)
 }
 
-func (s *Set[T]) Intersect(other *Set[T]) *Set[T] {
+func (s *Set[T]) Intersect(o *Set[T]) *Set[T] {
 	s.mu.RLock()
-	us := s.us.Intersect(other.us)
+	o.mu.RLock()
+	us := s.us.Intersect(o.us)
 	s.mu.RUnlock()
+	o.mu.RUnlock()
 	return &Set[T]{us: us}
 }
 
-func (s *Set[T]) Union(other *Set[T]) *Set[T] {
-	s.mu.Lock()
-	us := s.us.Union(other.us)
-	s.mu.Unlock()
+func (s *Set[T]) Union(o *Set[T]) *Set[T] {
+	s.mu.RLock()
+	o.mu.RLock()
+	us := s.us.Union(o.us)
+	s.mu.RUnlock()
+	o.mu.RUnlock()
 	return &Set[T]{us: us}
 }
 
-func (s *Set[T]) Difference(other *Set[T]) *Set[T] {
+func (s *Set[T]) Difference(o *Set[T]) *Set[T] {
 	s.mu.RLock()
-	us := s.us.Difference(other.us)
+	o.mu.RLock()
+	us := s.us.Difference(o.us)
 	s.mu.RUnlock()
+	o.mu.RUnlock()
 	return &Set[T]{us: us}
 }
 
@@ -86,10 +96,12 @@ func (s *Set[T]) IsEmpty() bool {
 	return s.Cardinality() == 0
 }
 
-func (s *Set[T]) IsSubset(other *Set[T]) bool {
+func (s *Set[T]) IsSubset(o *Set[T]) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.us.IsSubset(other.us)
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	return s.us.IsSubset(o.us)
 }
 
 func (s *Set[T]) IsSuperset(other *Set[T]) bool {

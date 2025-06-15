@@ -17,8 +17,8 @@ func New[K comparable, V any](capacity int) *Map[K, V] {
 	}
 }
 
-// Put adds key-val entry to map
-func (m *Map[K, V]) Put(key K, val V) {
+// Set adds key-val entry to map
+func (m *Map[K, V]) Set(key K, val V) {
 	m.mu.Lock()
 	m.m[key] = val
 	m.mu.Unlock()

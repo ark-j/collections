@@ -33,7 +33,7 @@ func TestMap(t *testing.T) {
 		for _, el := range data {
 			el := el
 			go func() {
-				mm.Put(el.key, el.val)
+				mm.Set(el.key, el.val)
 				wg.Done()
 			}()
 		}
@@ -53,7 +53,7 @@ func TestMap(t *testing.T) {
 	t.Run("concurrent-get", func(t *testing.T) {
 		mm := New[string, string](len(data))
 		for _, el := range data {
-			mm.Put(el.key, el.val)
+			mm.Set(el.key, el.val)
 		}
 		var wg sync.WaitGroup
 		wg.Add(len(data))
@@ -77,7 +77,7 @@ func TestMap(t *testing.T) {
 		go func() {
 			mu.RLock()
 			for _, el := range data {
-				mm.Put(el.key, el.val)
+				mm.Set(el.key, el.val)
 			}
 			mu.RUnlock()
 			wg.Done()

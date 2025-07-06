@@ -25,7 +25,8 @@ func (m *Map[K, V]) Set(key K, val V) {
 }
 
 // Get get value provided key
-func (m *Map[K, V]) Get(key K) V { //nolint
+// nolint:ireturn
+func (m *Map[K, V]) Get(key K) V {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.m[key]
